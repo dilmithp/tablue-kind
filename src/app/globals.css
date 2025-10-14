@@ -1,26 +1,110 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Tableau-style base styles */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  html {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-weight: 400;
+    overflow-x: hidden;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Tableau component styles */
+@layer components {
+  .tableau-card {
+    @apply bg-white rounded-tableau shadow-tableau border border-tableau-gray-200;
+  }
+
+  .tableau-header {
+    @apply bg-white border-b border-tableau-gray-200 px-6 py-3;
+  }
+
+  .tableau-kpi {
+    @apply tableau-card p-4 hover:shadow-tableau-lg transition-shadow duration-200;
+  }
+
+  .tableau-chart {
+    @apply tableau-card p-6;
+  }
+
+  .tableau-filter {
+    @apply bg-tableau-gray-50 border border-tableau-gray-200 rounded-tableau px-3 py-2 text-sm;
+  }
+
+  .tableau-button {
+    @apply bg-tableau-blue hover:bg-tableau-blue-dark text-white px-4 py-2 rounded-tableau text-sm font-medium transition-colors duration-200;
+  }
+
+  .tableau-status-success {
+    @apply text-status-success font-semibold;
+  }
+
+  .tableau-status-warning {
+    @apply text-status-warning font-semibold;
+  }
+
+  .tableau-status-danger {
+    @apply text-status-danger font-semibold;
+  }
+
+  .tableau-metric-large {
+    @apply text-kpi font-tableau text-tableau-navy;
+  }
+
+  .tableau-metric-medium {
+    @apply text-metric font-tableau text-tableau-gray-700;
+  }
+
+  .tableau-label {
+    @apply text-label font-tableau text-tableau-gray-600 uppercase tracking-wide;
+  }
+}
+
+/* Chart container styles */
+.recharts-wrapper {
+  font-family: 'Segoe UI', sans-serif !important;
+}
+
+.recharts-cartesian-axis-tick text {
+  font-size: 12px !important;
+  fill: #6c757d !important;
+}
+
+.recharts-legend-item-text {
+  font-size: 12px !important;
+  color: #495057 !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dee2e6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
 }
