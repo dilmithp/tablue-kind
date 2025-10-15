@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Remove React Compiler for now - it's experimental
+    eslint: {
+        ignoreDuringBuilds: false,
+    },
     typescript: {
         ignoreBuildErrors: false,
     },
+    images: {
+        unoptimized: true
+    }
 }
 
 module.exports = nextConfig
