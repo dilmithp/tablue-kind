@@ -13,11 +13,7 @@ export function EnhancedCategoryBar() {
         { category: 'Baby Wipes', sales: 6.5, color: '#22c55e' },
         { category: 'Baby Powder', sales: 6.2, color: '#65a30d' },
         { category: 'Soap Bar', sales: 6.0, color: '#84cc16' },
-        { category: 'Detergent', sales: 5.8, color: '#a3e635' },
-        { category: 'Baby Diaper', sales: 5.5, color: '#bef264' },
-        { category: 'Jam', sales: 5.2, color: '#d9f99d' },
-        { category: 'Floor Clean', sales: 5.0, color: '#ecfccb' },
-        { category: 'Tea', sales: 4.8, color: '#f0fdf4' }
+        { category: 'Detergent', sales: 5.8, color: '#a3e635' }
     ];
 
     return (
@@ -27,20 +23,21 @@ export function EnhancedCategoryBar() {
                 <p className="text-sm text-gray-600 mt-1">Performance by product category</p>
             </div>
 
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                     data={categoryData}
-                    layout="verticalLayout"
-                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                    margin={{ top: 5, right: 30, left: 40, bottom: 60 }}
                 >
-                    <XAxis type="number" hide />
-                    <YAxis
-                        type="category"
+                    <XAxis
                         dataKey="category"
                         axisLine={false}
                         tickLine={false}
+                        tick={{ fontSize: 10, fill: '#64748b', angle: -45, textAnchor: 'end' }}
+                    />
+                    <YAxis
+                        axisLine={false}
+                        tickLine={false}
                         tick={{ fontSize: 11, fill: '#64748b' }}
-                        width={80}
                     />
                     <Tooltip
                         contentStyle={{
@@ -51,7 +48,7 @@ export function EnhancedCategoryBar() {
                         }}
                         formatter={(value: any) => [`${value}M`, 'Net Sales']}
                     />
-                    <Bar dataKey="sales" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="sales" radius={[4, 4, 0, 0]}>
                         {categoryData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
