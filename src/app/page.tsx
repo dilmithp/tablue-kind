@@ -9,6 +9,7 @@ import { EnhancedForecastTable } from '@/components/EnhancedForecastTable';
 import { ProfessionalAchievementChart } from '@/components/ProfessionalAchievementChart';
 import { ReturnRateMatrix } from '@/components/ReturnRateMatrix';
 import { EnhancedChannelDonut } from '@/components/EnhancedChannelDonut';
+import { DashboardData } from '@/lib/types';
 import {
     TrendingUp,
     Target,
@@ -36,7 +37,7 @@ export default function Dashboard() {
     const [selectedRegion, setSelectedRegion] = useState('All Regions');
     const [selectedChannel, setSelectedChannel] = useState('All Channels');
 
-    const [dashboardData, setDashboardData] = useState<any | null>(null);
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     // --- UPDATED useEffect ---
@@ -87,6 +88,11 @@ export default function Dashboard() {
     const oosRateValue = Number(dashboardData?.kpis?.oosRate) || 0;
     const growthPercentValue = Number(dashboardData?.kpis?.growthPercent) || 0;
 
+    // Helper to ensure status is the correct type
+    const getStatus = (condition: boolean, successStatus: 'success' | 'warning' | 'danger' | 'info', failStatus: 'success' | 'warning' | 'danger' | 'info'): 'success' | 'warning' | 'danger' | 'info' => {
+        return condition ? successStatus : failStatus;
+    };
+
     const enhancedKPIs = [
         {
             id: 'ytd-sales',
@@ -104,9 +110,9 @@ export default function Dashboard() {
             value: growthPercentValue.toFixed(1),
             target: 0,
             unit: '%',
-            trend: growthPercentValue >= 0 ? 'up' as const : 'down' as const,
+            trend: (growthPercentValue >= 0 ? 'up' : 'down') as const,
             trendValue: growthPercentValue,
-            status: growthPercentValue >= 0 ? 'success' as const : 'danger' as const
+            status: getStatus(growthPercentValue >= 0, 'success', 'danger')
         },
         {
             id: 'promo-uplift',
@@ -114,9 +120,9 @@ export default function Dashboard() {
             value: promoUpliftValue.toFixed(1),
             target: 15,
             unit: '%',
-            trend: promoUpliftValue >= 15 ? 'up' as const : 'down' as const,
+            trend: (promoUpliftValue >= 15 ? 'up' : 'down') as const,
             trendValue: promoUpliftValue,
-            status: promoUpliftValue >= 15 ? 'success' as const : (promoUpliftValue > 0 ? 'warning' : 'danger')
+            status: promoUpliftValue >= 15 ? 'success' : (promoUpliftValue > 0 ? 'warning' : 'danger')
         },
         {
             id: 'return-rate',
@@ -124,9 +130,9 @@ export default function Dashboard() {
             value: returnRateValue.toFixed(1),
             target: 3.0,
             unit: '%',
-            trend: returnRateValue <= 3.0 ? 'down' as const : 'up' as const,
+            trend: (returnRateValue <= 3.0 ? 'down' : 'up') as const,
             trendValue: returnRateValue - 3.0,
-            status: returnRateValue <= 3.0 ? 'success' as const : 'warning' as const
+            status: getStatus(returnRateValue <= 3.0, 'success', 'warning')
         },
         {
             id: 'oos-rate',
@@ -134,19 +140,19 @@ export default function Dashboard() {
             value: oosRateValue.toFixed(1),
             target: 15.0,
             unit: '%',
-            trend: oosRateValue <= 15.0 ? 'down' as const : 'up' as const,
+            trend: (oosRateValue <= 15.0 ? 'down' : 'up') as const,
             trendValue: oosRateValue - 15.0,
-            status: oosRateValue <= 15.0 ? 'success' as const : 'warning' as const
+            status: getStatus(oosRateValue <= 15.0, 'success', 'warning')
         }
     ];
 
 
     const kpiIcons = [
-        <TrendingUp className="w-5 h-5 text-blue-600" />,
-        <Target className="w-5 h-5 text-red-600" />,
-        <Gift className="w-5 h-5 text-purple-600" />,
-        <RotateCcw className="w-5 h-5 text-green-600" />,
-        <PieChart className="w-5 h-5 text-orange-600" />
+        <TrendingUp key="icon-0" className="w-5 h-5 text-blue-600" />,
+        <Target key="icon-1" className="w-5 h-5 text-red-600" />,
+        <Gift key="icon-2" className="w-5 h-5 text-purple-600" />,
+        <RotateCcw key="icon-3" className="w-5 h-5 text-green-600" />,
+        <PieChart key="icon-4" className="w-5 h-5 text-orange-600" />
     ];
 
     return (

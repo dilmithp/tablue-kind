@@ -40,18 +40,22 @@ export interface CategoryData {
 
 export interface ChannelData {
   channel: string;
-  percentage: number;
+  percentage?: number;
   sales: number;
-  returnRate: number;
-  color: string;
+  returnRate?: number;
+  color?: string;
 }
 
 export interface Achievement {
-  id: string;
-  title: string;
-  value: string;
-  description: string;
-  type: 'success' | 'warning' | 'info';
+  id?: string;
+  name: string;
+  title?: string;
+  value?: string;
+  totalSales?: number;
+  totalTarget?: number;
+  achievement: number;
+  description?: string;
+  type?: 'success' | 'warning' | 'info';
   trend?: 'up' | 'down';
 }
 
@@ -64,12 +68,21 @@ export interface Alert {
 }
 
 export interface DashboardData {
-  kpis: KPIMetric[];
-  salesForecast: SalesData[];
-  regional: RegionalData[];
-  categories: CategoryData[];
+  kpis: {
+    ytdSales: number;
+    returnRate: number;
+    growthPercent: number;
+    oosRate: number;
+    promoUplift: number;
+  };
   channels: ChannelData[];
-  achievements: Achievement[];
-  alerts: Alert[];
+  salesForecast: SalesData[];
+  outletCount: number;
+  skuCount: number;
+  regionList: string[];
+  channelList: string[];
+  forecastTable: any[];
+  achievementData: Achievement[];
+  returnMatrixData: any[];
   lastUpdated: string;
 }
