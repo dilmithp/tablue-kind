@@ -2,71 +2,90 @@
 'use client';
 
 import React from 'react';
-import { Calendar, Filter, Download, RefreshCw, Settings } from 'lucide-react';
+import { Filter, Calendar } from 'lucide-react';
 
+// Define the new props our header will accept
 interface TableauHeaderProps {
-  title: string;
-  lastUpdated: string;
+    title: string;
+    regionList: string[];
+    channelList: string[];
+    selectedRegion: string;
+    selectedChannel: string;
+    onRegionChange: (value: string) => void;
+    onChannelChange: (value: string) => void;
 }
 
-export function TableauHeader({ title, lastUpdated }: TableauHeaderProps) {
-  return (
-    <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-lg">
-      <div className="px-8 py-4">
-        <div className="flex items-center justify-between">
-          {/* Left: Title */}
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">U</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {title}
-              </h1>
-              <p className="text-blue-200 text-sm">
-                Trade Analytics Dashboard • Executive Overview
-              </p>
-            </div>
-          </div>
+export function TableauHeader({
+                                  title,
+                                  regionList,
+                                  channelList,
+                                  selectedRegion,
+                                  selectedChannel,
+                                  onRegionChange,
+                                  onChannelChange,
+                              }: TableauHeaderProps) {
 
-          {/* Right: Controls */}
-          <div className="flex items-center space-x-4">
-            {/* Month Filter */}
-            <div className="flex items-center space-x-2">
-              <span className="text-blue-200 text-sm">Month</span>
-              <select className="bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
-                <option className="text-gray-900">All</option>
-                <option className="text-gray-900">January</option>
-                <option className="text-gray-900">February</option>
-                <option className="text-gray-900">March</option>
-              </select>
-            </div>
+    // Base style for the dropdowns
+    const selectStyle = "bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
-            {/* Date Filter */}
-            <div className="flex items-center space-x-2">
-              <span className="text-blue-200 text-sm">Date</span>
-              <select className="bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
-                <option className="text-gray-900">All</option>
-                <option className="text-gray-900">Last 7 Days</option>
-                <option className="text-gray-900">Last 30 Days</option>
-                <option className="text-gray-900">YTD</option>
-              </select>
-            </div>
+    return (
+        <header className="bg-white shadow-sm border-b border-gray-200">
+            <div className="max-w-full mx-auto px-8">
+                <div className="flex justify-between items-center h-20">
+                    {/* Left Side: Title */}
+                    <div className="flex-shrink-0">
+                        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+                        <p className="text-sm text-gray-500">
+                            Unilever Sri Lanka - Head of Trade Analytics
+                        </p>
+                    </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <button className="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded text-sm transition-colors duration-200 flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Calendar</span>
-              </button>
-              <button className="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded text-sm transition-colors duration-200 flex items-center">
-                <Download className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Export</span>
-              </button>
+                    {/* Right Side: Filters */}
+                    <div className="flex items-center space-x-4">
+
+                        {/* Region Filter Dropdown */}
+                        <div>
+                            <label htmlFor="region" className="block text-xs font-semibold text-gray-600 mb-1">
+                                Region
+                            </label>
+                            <select
+                                id="region"
+                                name="region"
+                                className={selectStyle}
+                                value={selectedRegion}
+                                onChange={(e) => onRegionChange(e.target.value)}
+                            >
+                                {regionList.map((region) => (
+                                    <option key={region} value={region}>
+                                        {region}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Channel Filter Dropdown */}
+                        <div>
+                            <label htmlFor="channel" className="block text-xs font-semibold text-gray-600 mb-1">
+                                Channel
+                            </label>
+                            <select
+                                id="channel"
+                                name="channel"
+                                className={selectStyle}
+                                value={selectedChannel}
+                                onChange={(e) => onChannelChange(e.target.value)}
+                            >
+                                {channelList.map((channel) => (
+                                    <option key={channel} value={channel}>
+                                        {channel}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+        </header>
+    );
 }

@@ -2,126 +2,126 @@
 'use client';
 
 import React from 'react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend,
-  ResponsiveContainer 
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+    LabelList,
 } from 'recharts';
+import { Target } from 'lucide-react';
 
-interface AchievementChartProps {
-  data: any[];
+// Define the shape of the data we expect from the API
+interface AchievementData {
+    name: string;
+    totalSales: number;
+    totalTarget: number;
+    achievement: number;
 }
 
-export function ProfessionalAchievementChart({ data }: AchievementChartProps) {
-  // Generate achievement data similar to reference image
-  const achievementData = [
-    { month: 'Jan', achievement: 48000, sales: 45000, target: 50000 },
-    { month: 'Feb', achievement: 52000, sales: 48000, target: 50000 },
-    { month: 'Mar', achievement: 45000, sales: 47000, target: 50000 },
-    { month: 'Apr', achievement: 55000, sales: 52000, target: 50000 },
-    { month: 'May', achievement: 48000, sales: 46000, target: 50000 },
-    { month: 'Jun', achievement: 53000, sales: 51000, target: 50000 },
-    { month: 'Jul', achievement: 46000, sales: 44000, target: 50000 },
-    { month: 'Aug', achievement: 49000, sales: 47000, target: 50000 },
-    { month: 'Sep', achievement: 52000, sales: 50000, target: 50000 },
-    { month: 'Oct', achievement: 54000, sales: 53000, target: 50000 },
-    { month: 'Nov', achievement: 51000, sales: 49000, target: 50000 },
-    { month: 'Dec', achievement: 56000, sales: 55000, target: 50000 }
-  ];
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Achievement%</h2>
-          <p className="text-sm text-gray-600 mt-1">Sales vs Target Performance</p>
-        </div>
-        <div className="flex items-center space-x-4 text-sm">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-blue-600 rounded-full mr-2"></div>
-            <span className="text-gray-700">Achievement%</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-teal-400 rounded-full mr-2"></div>
-            <span className="text-gray-700">Sales Quantity</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-teal-200 rounded-full mr-2"></div>
-            <span className="text-gray-700">Target Quantity</span>
-          </div>
-        </div>
-      </div>
-
-      <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={achievementData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="colorAchievement" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1e40af" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#1e40af" stopOpacity={0.1}/>
-            </linearGradient>
-            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.2}/>
-            </linearGradient>
-            <linearGradient id="colorTarget" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#5eead4" stopOpacity={0.6}/>
-              <stop offset="95%" stopColor="#5eead4" stopOpacity={0.1}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis 
-            dataKey="month" 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: '#64748b' }}
-          />
-          <YAxis 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: '#64748b' }}
-            tickFormatter={(value) => `${value/1000}k`}
-          />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'white', 
-              border: '1px solid #e2e8f0', 
-              borderRadius: '8px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-            }}
-            labelStyle={{ color: '#374151', fontWeight: 'bold' }}
-          />
-          <Area 
-            type="monotone" 
-            dataKey="target" 
-            stackId="1"
-            stroke="#5eead4" 
-            fillOpacity={1}
-            fill="url(#colorTarget)" 
-          />
-          <Area 
-            type="monotone" 
-            dataKey="sales" 
-            stackId="1"
-            stroke="#14b8a6" 
-            fillOpacity={1}
-            fill="url(#colorSales)" 
-          />
-          <Area 
-            type="monotone" 
-            dataKey="achievement" 
-            stackId="2"
-            stroke="#1e40af" 
-            strokeWidth={2}
-            fillOpacity={1}
-            fill="url(#colorAchievement)" 
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
+interface ChartProps {
+    data: AchievementData[];
 }
+
+// Helper to format the percentage
+const formatPercent = (value: number) => {
+    if (value === null || value === undefined) return 'N/A';
+    return `${value.toFixed(1)}%`;
+};
+
+// Custom Tooltip for more details
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        const sales = (data.totalSales || 0).toLocaleString('en-LK', {
+            style: 'currency',
+            currency: 'LKR',
+            maximumFractionDigits: 0,
+        });
+        const target = (data.totalTarget || 0).toLocaleString('en-LK', {
+            style: 'currency',
+            currency: 'LKR',
+            maximumFractionDigits: 0,
+        });
+
+        return (
+            <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                <p className="font-bold text-gray-800">{label}</p>
+                <p className="text-sm text-blue-600 font-semibold">{`Ach: ${formatPercent(
+                    data.achievement
+                )}`}</p>
+                <p className="text-sm text-gray-600">{`Sales: ${sales}`}</p>
+                <p className="text-sm text-gray-600">{`Target: ${target}`}</p>
+            </div>
+        );
+    }
+    return null;
+};
+
+export function ProfessionalAchievementChart({ data }: ChartProps) {
+    if (!data || data.length === 0) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 h-full flex items-center justify-center">
+                <p className="text-gray-500">No achievement data available.</p>
+            </div>
+        );
+    }
+
+    // Add a 'fill' color based on performance
+    const processedData = data.map((item) => ({
+        ...item,
+        achievement: Number(item.achievement) || 0,
+        fill: (Number(item.achievement) || 0) >= 100 ? '#22c55e' : '#3b82f6', // Green if >= 100%, else Blue
+    }));
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 h-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Achievement % by Region (2024)
+            </h3>
+            <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        layout="vertical"
+                        data={processedData}
+                        margin={{
+                            top: 5,
+                            right: 30,
+                            left: 20,
+                            bottom: 5,
+                        }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                        <XAxis type="number" unit="%" domain={[0, 'dataMax + 20']} />
+                        <YAxis
+                            dataKey="name"
+                            type="category"
+                            stroke="#6b7280"
+                            fontSize={12}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="achievement" fill="#8884d8" barSize={30}>
+                            <LabelList
+                                dataKey="achievement"
+                                position="right"
+                                formatter={formatPercent}
+                                fontSize={12}
+                                fontWeight="bold"
+                            />
+                            {processedData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
+}
+
+// Add a 'Cell' import from recharts
+import { Cell } from 'recharts';
