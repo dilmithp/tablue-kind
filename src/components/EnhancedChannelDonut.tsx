@@ -2,80 +2,105 @@
 'use client';
 
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export function EnhancedChannelDonut() {
-  const channelData = [
-    { name: 'Wholesale', value: 32.12, color: '#1e40af' },
-    { name: 'Pharmacy', value: 23.51, color: '#06b6d4' },
-    { name: 'Supermarket', value: 23.81, color: '#10b981' },
-    { name: 'Retail Shop', value: 20.56, color: '#8b5cf6' }
-  ];
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-900">{data.name}</p>
-          <p className="text-blue-600 font-medium">{data.value}%</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Channel Sales</h2>
-        <p className="text-sm text-gray-600 mt-1">Distribution by sales channel</p>
-      </div>
-
-      <div className="relative">
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={channelData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={3}
-              dataKey="value"
-            >
-              {channelData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-
-        {/* Center Label */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900">100%</div>
-            <div className="text-sm text-gray-600">Total Sales</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        {channelData.map((channel, index) => (
-          <div key={channel.name} className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div 
-                className="w-4 h-4 rounded-full mr-3" 
-                style={{ backgroundColor: channel.color }}
-              />
-              <span className="text-sm font-medium text-gray-700">{channel.name}</span>
-            </div>
-            <span className="text-sm font-bold text-gray-900">{channel.value}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+// Define the shape of the data we expect from the API
+interface ChannelData {
+    channel: string;
+    sales: number;
 }
+
+// Define the props for our component
+interface EnhancedChannelDonutProps {
+    data: ChannelData[];
+}
+
+// Pre-defined color palette
+const COLORS = [
+    '#0088FE', // Blue
+    '#00C49F', // Green
+    '#FFBB28', // Yellow
+    '#FF8042', // Orange
+    '#AF19FF', // Purple
+    '#FF1975', // Pink
+];
+
+// Helper to format numbers to LKR
+const formatLKR = (value: number) => {
+    return `LKR ${new Intl.NumberFormat('en-LK').format(value)}`;
+};
+
+export function EnhancedChannelDonut({ data }: EnhancedChannelDonutProps) {
+    if (!data || data.length === 0) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center justify-center h-full">
+                <p className="text-gray-500">No channel data available.</p>
+            </div>
+        );
+    }
+
+    // Calculate total sales to get percentages
+    const totalSales = data.reduce((acc, entry) => acc + (Number(entry.sales) || 0), 0);
+
+    // Format data for the chart, adding percentages and colors
+    const chartData = data.map((entry, index) => ({
+        name: entry.channel,
+        value: Number(entry.sales) || 0,
+        percentage: ((Number(entry.sales) || 0 / totalSales) * 100).toFixed(1),
+        color: COLORS[index % COLORS.length],
+    }));
+
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+                <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                    <p className="font-bold text-gray-800">{data.name}</p>
+                    <p className="text-sm text-blue-600">{`${formatLKR(data.value)}`}</p>
+                    <p className="text-sm text-gray-600">{`(${data.percentage}%)`}</p>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    return (
+        // Using the same styling as the cards in page.tsx
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 h-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales by Channel (2024)</h3>
+            <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                    <PieChart>
+                        <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={90}
+                            fill="#8884d8"
+                            paddingAngle={2}
+                            dataKey="value"
+                        >
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend
+                            layout="vertical"
+                            align="right"
+                            verticalAlign="middle"
+                            iconType="circle"
+                            formatter={(value, entry) => (
+                                <span className="text-gray-700 font-medium">{value}</span>
+                            )}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
+}
+
+// Default export in case it's needed
+export default EnhancedChannelDonut;
