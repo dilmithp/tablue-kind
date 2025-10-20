@@ -88,11 +88,6 @@ export default function Dashboard() {
     const oosRateValue = Number(dashboardData?.kpis?.oosRate) || 0;
     const growthPercentValue = Number(dashboardData?.kpis?.growthPercent) || 0;
 
-    // Helper to ensure status is the correct type
-    const getStatus = (condition: boolean, successStatus: 'success' | 'warning' | 'danger' | 'info', failStatus: 'success' | 'warning' | 'danger' | 'info'): 'success' | 'warning' | 'danger' | 'info' => {
-        return condition ? successStatus : failStatus;
-    };
-
     const enhancedKPIs = [
         {
             id: 'ytd-sales',
@@ -100,9 +95,9 @@ export default function Dashboard() {
             value: `LKR ${formatLargeNumber(dashboardData?.kpis?.ytdSales || 0)}`,
             target: 40000000,
             unit: '',
-            trend: 'up' as const,
-            trendValue: 5.2, // This could also be data-driven
-            status: 'success' as const
+            trend: 'up' as 'up' | 'down',
+            trendValue: 5.2,
+            status: 'success' as 'success' | 'warning' | 'danger' | 'info'
         },
         {
             id: 'growth-rate',
@@ -110,9 +105,9 @@ export default function Dashboard() {
             value: growthPercentValue.toFixed(1),
             target: 0,
             unit: '%',
-            trend: (growthPercentValue >= 0 ? 'up' : 'down') as const,
+            trend: (growthPercentValue >= 0 ? 'up' : 'down') as 'up' | 'down',
             trendValue: growthPercentValue,
-            status: getStatus(growthPercentValue >= 0, 'success', 'danger')
+            status: (growthPercentValue >= 0 ? 'success' : 'danger') as 'success' | 'warning' | 'danger' | 'info'
         },
         {
             id: 'promo-uplift',
@@ -120,9 +115,9 @@ export default function Dashboard() {
             value: promoUpliftValue.toFixed(1),
             target: 15,
             unit: '%',
-            trend: (promoUpliftValue >= 15 ? 'up' : 'down') as const,
+            trend: (promoUpliftValue >= 15 ? 'up' : 'down') as 'up' | 'down',
             trendValue: promoUpliftValue,
-            status: promoUpliftValue >= 15 ? 'success' : (promoUpliftValue > 0 ? 'warning' : 'danger')
+            status: (promoUpliftValue >= 15 ? 'success' : (promoUpliftValue > 0 ? 'warning' : 'danger')) as 'success' | 'warning' | 'danger' | 'info'
         },
         {
             id: 'return-rate',
@@ -130,9 +125,9 @@ export default function Dashboard() {
             value: returnRateValue.toFixed(1),
             target: 3.0,
             unit: '%',
-            trend: (returnRateValue <= 3.0 ? 'down' : 'up') as const,
+            trend: (returnRateValue <= 3.0 ? 'down' : 'up') as 'up' | 'down',
             trendValue: returnRateValue - 3.0,
-            status: getStatus(returnRateValue <= 3.0, 'success', 'warning')
+            status: (returnRateValue <= 3.0 ? 'success' : 'warning') as 'success' | 'warning' | 'danger' | 'info'
         },
         {
             id: 'oos-rate',
@@ -140,9 +135,9 @@ export default function Dashboard() {
             value: oosRateValue.toFixed(1),
             target: 15.0,
             unit: '%',
-            trend: (oosRateValue <= 15.0 ? 'down' : 'up') as const,
+            trend: (oosRateValue <= 15.0 ? 'down' : 'up') as 'up' | 'down',
             trendValue: oosRateValue - 15.0,
-            status: getStatus(oosRateValue <= 15.0, 'success', 'warning')
+            status: (oosRateValue <= 15.0 ? 'success' : 'warning') as 'success' | 'warning' | 'danger' | 'info'
         }
     ];
 

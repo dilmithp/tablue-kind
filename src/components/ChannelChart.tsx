@@ -34,9 +34,9 @@ export function ChannelChart({ data }: ChannelChartProps) {
                 {data.map((channel) => (
                     <div key={channel.channel} className="text-center">
                         <div className="text-sm font-medium">{channel.channel}</div>
-                        <div className="text-lg font-bold text-gray-900">{formatPercentage(channel.percentage)}</div>
+                        <div className="text-lg font-bold text-gray-900">{formatPercentage(channel.percentage || 0)}</div>
                         <div className="text-xs text-gray-600">
-                            {formatPercentage(channel.returnRate)} returns
+                            {formatPercentage(channel.returnRate || 0)} returns
                         </div>
                     </div>
                 ))}

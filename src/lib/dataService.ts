@@ -6,13 +6,22 @@ export class DataService {
     // Remove async and delays - return data immediately
     static getDashboardData(): DashboardData {
         return {
-            kpis: this.generateKPIs(),
+            kpis: {
+                ytdSales: 37000000,
+                returnRate: 2.8,
+                growthPercent: 12.5,
+                oosRate: 14.2,
+                promoUplift: 24.5
+            },
             salesForecast: this.generateForecastData(),
-            regional: this.generateRegionalData(),
-            categories: this.generateCategoryData(),
             channels: this.generateChannelData(),
-            achievements: this.generateAchievements(),
-            alerts: this.generateAlerts(),
+            outletCount: 1250,
+            skuCount: 342,
+            regionList: ['All Regions', 'Western', 'Central', 'Southern', 'Northern', 'Eastern'],
+            channelList: ['All Channels', 'Supermarket', 'Hypermarket', 'Convenience Store'],
+            forecastTable: [],
+            achievementData: this.generateAchievements(),
+            returnMatrixData: [],
             lastUpdated: new Date().toISOString()
         };
     }
@@ -62,7 +71,9 @@ export class DataService {
 
     static generateAchievements(): Achievement[] {
         return [
-            { id: '1', title: 'Western Province', value: '115.2%', description: 'Above target', type: 'success', trend: 'up' },
+            { name: 'Western', totalSales: 15000000, totalTarget: 13000000, achievement: 115.2, type: 'success', trend: 'up' },
+            { name: 'Central', totalSales: 8000000, totalTarget: 9000000, achievement: 88.9, type: 'warning', trend: 'down' },
+            { name: 'Southern', totalSales: 7000000, totalTarget: 7500000, achievement: 93.3, type: 'info', trend: 'up' },
         ];
     }
 

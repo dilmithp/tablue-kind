@@ -51,8 +51,8 @@ export interface Achievement {
   name: string;
   title?: string;
   value?: string;
-  totalSales?: number;
-  totalTarget?: number;
+  totalSales: number;
+  totalTarget: number;
   achievement: number;
   description?: string;
   type?: 'success' | 'warning' | 'info';

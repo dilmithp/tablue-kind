@@ -190,8 +190,9 @@ export async function GET(request: Request) {
             )
             SELECT
                 COALESCE(s.region, t.region) as "name",
-                s."totalSales", t."totalTarget",
-                CASE WHEN t."totalTarget" = 0 OR t."totalTarget" IS NULL THEN 0 ELSE (s."totalSales" / t."totalTarget") * 100 END as "achievement"
+                COALESCE(s."totalSales", 0) as "totalSales",
+                COALESCE(t."totalTarget", 0) as "totalTarget",
+                CASE WHEN COALESCE(t."totalTarget", 0) = 0 THEN 0 ELSE (COALESCE(s."totalSales", 0) / t."totalTarget") * 100 END as "achievement"
             FROM SalesByRegion s FULL OUTER JOIN TargetsByRegion t ON s.region = t.region
             ORDER BY "achievement" DESC;
         `;
