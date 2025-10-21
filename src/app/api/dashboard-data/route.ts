@@ -108,7 +108,53 @@ export async function GET(request: Request) {
         // --- QUERY 12: 8-WEEK FORECAST TABLE ---
         const forecastTableQuery = `SELECT week, prophet, naive_seasonal, sarima, sarimax_promo FROM forecast_table_8w ORDER BY week ASC LIMIT 8;`;
         // --- QUERY 13: ACHIEVEMENT BY REGION (2024) ---
-        const achievementQuery = `WITH SalesByRegion AS (SELECT region, COALESCE(SUM(net_sales), 0) as "totalSales" FROM sales_transactions ${salesWhere2024} GROUP BY region), TargetsByRegion AS (SELECT om.region, COALESCE(SUM(t.target_amount), 0) as "totalTarget" FROM targets t ${targetJoinSql} ${targetWhereSql} GROUP BY om.region) SELECT COALESCE(s.region, t.region) as "name", COALESCE(s."totalSales", 0) as "totalSales", COALESCE(t."totalTarget", 0) as "totalTarget", CASE WHEN COALESCE(t."totalTarget", 0) = 0 THEN 0 ELSE (COALESCE(s."totalSales", 0) / t."totalTarget") * 100 END as "achievement" FROM SalesByRegion s FULL OUTER JOIN TargetsByRegion t ON s.region = t.region ORDER BY "achievement" DESC;`;
+        // Updated to convert quantity-based targets to LKR using average price per unit
+        const achievementQuery = `
+            WITH SalesByRegion AS (
+                SELECT region, 
+                       COALESCE(SUM(net_sales), 0) as "totalSales",
+                       COALESCE(SUM(quantity_units), 0) as "totalQuantity"
+                FROM sales_transactions 
+                ${salesWhere2024} 
+                GROUP BY region
+            ), 
+            AvgPriceByRegion AS (
+                SELECT region,
+                       CASE 
+                           WHEN SUM(quantity_units) = 0 THEN 0
+                           ELSE SUM(net_sales) / NULLIF(SUM(quantity_units), 0)
+                       END as "avgPricePerUnit"
+                FROM sales_transactions
+                ${salesWhere2024}
+                GROUP BY region
+            ),
+            TargetsByRegion AS (
+                SELECT om.region, 
+                       COALESCE(SUM(t.target_amount), 0) as "totalTargetQty"
+                FROM targets t 
+                ${targetJoinSql} 
+                ${targetWhereSql} 
+                GROUP BY om.region
+            ),
+            TargetsInLKR AS (
+                SELECT t.region,
+                       t."totalTargetQty",
+                       COALESCE(t."totalTargetQty" * COALESCE(p."avgPricePerUnit", 0), 0) as "totalTarget"
+                FROM TargetsByRegion t
+                LEFT JOIN AvgPriceByRegion p ON t.region = p.region
+            )
+            SELECT 
+                COALESCE(s.region, t.region) as "name", 
+                COALESCE(s."totalSales", 0) as "totalSales", 
+                COALESCE(t."totalTarget", 0) as "totalTarget", 
+                CASE 
+                    WHEN COALESCE(t."totalTarget", 0) = 0 THEN 0 
+                    ELSE (COALESCE(s."totalSales", 0) / t."totalTarget") * 100 
+                END as "achievement" 
+            FROM SalesByRegion s 
+            FULL OUTER JOIN TargetsInLKR t ON s.region = t.region 
+            ORDER BY "achievement" DESC;
+        `;
         // --- QUERY 14: RETURN RATE MATRIX (2024) --- (User's working version)
         const returnMatrixQuery = `WITH ReturnTotals AS ( SELECT sm.portfolio, r.reason, COALESCE(SUM(r.returned_qty), 0) as "return_qty" FROM returns r ${returnQtyJoinSql} ${returnQtyWhereSql} GROUP BY sm.portfolio, r.reason ), PortfolioTotals AS ( SELECT portfolio, SUM("return_qty") as "total_portfolio_returns" FROM ReturnTotals GROUP BY portfolio ) SELECT rt.portfolio, rt.reason, CASE WHEN pt."total_portfolio_returns" = 0 OR pt."total_portfolio_returns" IS NULL THEN 0 ELSE (rt."return_qty" * 100.0 / pt."total_portfolio_returns") END as "return_value" FROM ReturnTotals rt JOIN PortfolioTotals pt ON rt.portfolio = pt.portfolio ORDER BY rt.portfolio, rt.reason;`;
 
@@ -116,65 +162,85 @@ export async function GET(request: Request) {
         // --- NEW QUERIES START HERE ---
 
         // --- QUERY 15: TOP/BOTTOM OUTLETS DATA (2024) ---
-        // Calculates multiple metrics per outlet
+        // Updated to convert quantity-based targets to LKR using average price per unit
         const outletPerformanceQuery = `
             WITH OutletSales AS (
-                SELECT outlet_id, SUM(net_sales) as "sales_2024"
-                FROM sales_transactions
-                         ${salesWhere2024}
+                SELECT outlet_id, 
+                       SUM(net_sales) as "sales_2024",
+                       SUM(quantity_units) as "quantity_2024"
+                FROM sales_transactions ${salesWhere2024}
                 GROUP BY outlet_id
-            ), OutletSalesPrev AS (
+            ), 
+            OutletSalesPrev AS (
                 SELECT outlet_id, SUM(net_sales) as "sales_2023"
-                FROM sales_transactions
-                         ${salesWhere2023}
+                FROM sales_transactions ${salesWhere2023}
                 GROUP BY outlet_id
-            ), OutletTargets AS (
-                SELECT t.outlet_id, SUM(t.target_amount) as "target_2024"
-                FROM targets t
-                ${targetJoinSql} ${targetWhereSql} -- Use JOIN and WHERE from logic above
-            GROUP BY t.outlet_id
-                ), OutletReturnValues AS ( -- Renamed to avoid clash with user Q14
-            SELECT outlet_id, COALESCE(SUM(ABS(net_sales)), 0) as "returns_value_2024"
-            FROM sales_transactions
-                ${outletReturnValuesWhere} -- Use specific clause for returns
-            GROUP BY outlet_id
-                ), OutletOOS AS (
-            SELECT vsc.outlet_id, AVG(vsc.oos_flag) * 100 as "oos_2024"
-            FROM visit_stock_capture vsc
-                ${oosJoinSql} ${oosWhereSql} -- Use JOIN and WHERE from logic above
-            GROUP BY vsc.outlet_id
-                ), LastVisit AS (
-            SELECT outlet_id, MAX(visit_date) as "last_visit_date"
-            FROM visit_stock_capture
-            GROUP BY outlet_id
-                )
+            ),
+            OutletAvgPrice AS (
+                SELECT outlet_id,
+                       CASE 
+                           WHEN SUM(quantity_units) = 0 THEN 0
+                           ELSE SUM(net_sales) / NULLIF(SUM(quantity_units), 0)
+                       END as "avgPricePerUnit"
+                FROM sales_transactions ${salesWhere2024}
+                GROUP BY outlet_id
+            ),
+            OutletTargetsQty AS (
+                SELECT t.outlet_id, SUM(t.target_amount) as "target_qty_2024"
+                FROM targets t ${targetJoinSql} ${targetWhereSql}
+                GROUP BY t.outlet_id
+            ),
+            OutletTargets AS (
+                SELECT tq.outlet_id,
+                       COALESCE(tq."target_qty_2024" * COALESCE(ap."avgPricePerUnit", 0), 0) as "target_2024"
+                FROM OutletTargetsQty tq
+                LEFT JOIN OutletAvgPrice ap ON tq.outlet_id = ap.outlet_id
+            ),
+            OutletReturnValues AS (
+                SELECT outlet_id, COALESCE(SUM(ABS(net_sales)), 0) as "returns_value_2024"
+                FROM sales_transactions ${outletReturnValuesWhere}
+                GROUP BY outlet_id
+            ),
+            OutletOOS AS (
+                SELECT vsc.outlet_id, AVG(vsc.oos_flag) * 100 as "oos_2024"
+                FROM visit_stock_capture vsc ${oosJoinSql} ${oosWhereSql}
+                GROUP BY vsc.outlet_id
+            ),
+            LastVisit AS (
+                SELECT outlet_id, MAX(visit_date) as "last_visit_date"
+                FROM visit_stock_capture
+                GROUP BY outlet_id
+            )
             SELECT
-                om.outlet_id, -- Keep ID for potential linking
-                om.outlet_name as "outlet", om.region, om.territory,
+                om.outlet_id,
+                om.outlet_name as "outlet", 
+                om.region, 
+                om.territory,
                 COALESCE(s.sales_2024, 0) as "sales",
                 COALESCE(t.target_2024, 0) as "target",
-                CASE WHEN COALESCE(t.target_2024, 0) = 0 THEN 0 ELSE (COALESCE(s.sales_2024, 0) / t.target_2024) * 100 END as "achievement",
+                CASE 
+                    WHEN COALESCE(t.target_2024, 0) = 0 THEN 0 
+                    ELSE (COALESCE(s.sales_2024, 0) / t.target_2024) * 100 
+                END as "achievement",
                 COALESCE(oos.oos_2024, 0) as "oos_percent",
-                -- Return % calculation based on Net Sales + Return Value (Approximates Gross Sales)
                 CASE
                     WHEN (COALESCE(s.sales_2024, 0) + COALESCE(rv.returns_value_2024, 0)) = 0 THEN 0
                     ELSE (COALESCE(rv.returns_value_2024, 0) / (COALESCE(s.sales_2024, 0) + COALESCE(rv.returns_value_2024, 0))) * 100
-                    END as "return_percent",
+                END as "return_percent",
                 COALESCE(sp.sales_2023, 0) as "sales_prev",
-                -- Growth % calculation
                 CASE
-                    WHEN COALESCE(sp.sales_2023, 0) = 0 THEN 0 -- Handle division by zero if no previous year sales
+                    WHEN COALESCE(sp.sales_2023, 0) = 0 THEN 0
                     ELSE ((COALESCE(s.sales_2024, 0) - sp.sales_2023) / sp.sales_2023) * 100
-                    END as "growth_percent",
+                END as "growth_percent",
                 lv.last_visit_date
             FROM outlet_master om
-                     LEFT JOIN OutletSales s ON om.outlet_id = s.outlet_id
-                     LEFT JOIN OutletSalesPrev sp ON om.outlet_id = sp.outlet_id
-                     LEFT JOIN OutletTargets t ON om.outlet_id = t.outlet_id
-                     LEFT JOIN OutletReturnValues rv ON om.outlet_id = rv.outlet_id
-                     LEFT JOIN OutletOOS oos ON om.outlet_id = oos.outlet_id
-                     LEFT JOIN LastVisit lv ON om.outlet_id = lv.outlet_id
-                ${outletWhereSql}; -- Apply filters directly on outlet_master (status, region, channel)
+            LEFT JOIN OutletSales s ON om.outlet_id = s.outlet_id
+            LEFT JOIN OutletSalesPrev sp ON om.outlet_id = sp.outlet_id
+            LEFT JOIN OutletTargets t ON om.outlet_id = t.outlet_id
+            LEFT JOIN OutletReturnValues rv ON om.outlet_id = rv.outlet_id
+            LEFT JOIN OutletOOS oos ON om.outlet_id = oos.outlet_id
+            LEFT JOIN LastVisit lv ON om.outlet_id = lv.outlet_id
+            ${outletWhereSql};
         `;
 
         // --- QUERY 16: TOP SKUS DATA (2024) ---
