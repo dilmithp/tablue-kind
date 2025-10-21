@@ -62,17 +62,17 @@ export function TopSkuTable({ data }: TopSkuTableProps) {
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                    {data.map((sku) => (
-                        <tr key={sku.sku} className="hover:bg-gray-50">
+                    {data.map((sku, index) => (
+                        <tr key={`${sku.sku}-${index}`} className="hover:bg-gray-50">
                             <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-800">{sku.sku}</td>
                             <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-700">{formatLKR(sku.sales)}</td>
-                            <td className={`px-3 py-3 whitespace-nowrap text-sm text-right font-semibold ${sku.promo_uplift_percent >= 15 ? 'text-green-600' : (sku.promo_uplift_percent > 0 ? 'text-orange-500' : 'text-red-600')}`}>
+                            <td className={`px-3 py-3 whitespace-nowrap text-sm text-right font-semibold ${sku.promo_uplift_percent >= 12 ? 'text-green-600' : (sku.promo_uplift_percent > 0 ? 'text-orange-500' : 'text-red-600')}`}>
                                 {formatPercent(sku.promo_uplift_percent)}
                             </td>
-                            <td className={`px-3 py-3 whitespace-nowrap text-sm text-right ${sku.return_percent > 5 ? 'text-red-600' : 'text-gray-700'}`}>
+                            <td className={`px-3 py-3 whitespace-nowrap text-sm text-right ${sku.return_percent > 2.5 ? 'text-red-600' : 'text-gray-700'}`}>
                                 {formatPercent(sku.return_percent)}
                             </td>
-                            <td className={`px-3 py-3 whitespace-nowrap text-sm text-right ${sku.oos_percent > 15 ? 'text-red-600' : 'text-gray-700'}`}>
+                            <td className={`px-3 py-3 whitespace-nowrap text-sm text-right ${sku.oos_percent > 10 ? 'text-red-600' : 'text-gray-700'}`}>
                                 {formatPercent(sku.oos_percent)}
                             </td>
                         </tr>
