@@ -30,7 +30,9 @@ interface ChartProps {
 // Helper to format the percentage
 const formatPercent = (value: number) => {
     if (value === null || value === undefined) return 'N/A';
-    return `${value.toFixed(1)}%`;
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(numValue)) return 'N/A';
+    return `${numValue.toFixed(1)}%`;
 };
 
 // Custom Tooltip for more details
