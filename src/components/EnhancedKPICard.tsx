@@ -93,34 +93,6 @@ export function EnhancedKPICard({ metric, icon, className }: EnhancedKPICardProp
             </span>
           </div>
         </div>
-
-        {/* Progress Indicator */}
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-gray-600 mb-1">
-            <span>Progress</span>
-            <span>
-              {typeof value === 'number' && typeof target === 'number' 
-                ? `${Math.round((value / target) * 100)}%` 
-                : '100%'
-              }
-            </span>
-          </div>
-          <div className="w-full bg-gray-100 rounded-full h-1.5">
-            <div 
-              className={`h-1.5 rounded-full transition-all duration-1000 ${
-                status === 'success' ? 'bg-emerald-500' :
-                status === 'warning' ? 'bg-amber-500' : 
-                status === 'danger' ? 'bg-red-500' : 'bg-gray-400'
-              }`}
-              style={{ 
-                width: `${typeof value === 'number' && typeof target === 'number' 
-                  ? Math.min((value / target) * 100, 100) 
-                  : 100
-                }%` 
-              }}
-            />
-          </div>
-        </div>
       </div>
     </div>
   );

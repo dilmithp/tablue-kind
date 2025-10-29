@@ -1,4 +1,3 @@
-// src/app/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -10,13 +9,11 @@ import { ProfessionalAchievementChart } from '@/components/ProfessionalAchieveme
 import { ReturnRateMatrix } from '@/components/ReturnRateMatrix';
 import { EnhancedChannelDonut } from '@/components/EnhancedChannelDonut';
 import { SriLankaMap } from '@/components/SriLankaMap';
-// --- NEW IMPORTS ---
 import { TopBottomOutletTable } from '@/components/TopBottomOutletTable';
 import { TopSkuTable } from '@/components/TopSkuTable';
 import { ExecutionWatchlistTable } from '@/components/ExecutionWatchlistTable';
 import { CompetitorInsights } from '@/components/CompetitorInsights';
 import { BrandVisibilityKPIs } from '@/components/BrandVisibilityKPIs';
-// --- END NEW IMPORTS ---
 import {
     TrendingUp,
     Target,
@@ -24,7 +21,8 @@ import {
     RotateCcw,
     PieChart,
     Calendar,
-    Database
+    Database,
+    Store
 } from 'lucide-react';
 
 // Helper function to format large numbers (e.g., 37M)
@@ -39,38 +37,36 @@ const formatLargeNumber = (value: number) => {
     return value.toString();
 };
 
-export default function Dashboard() {
-    // Filter State
-    const [selectedRegion, setSelectedRegion] = useState('All Regions');
-    const [selectedChannel, setSelectedChannel] = useState('All Channels');
+export default function ChannelManagerDashboard() {
+    // Channel Manager specific state - only allow channel selection
+    const [selectedChannel, setSelectedChannel] = useState('Supermarket'); // Default to Supermarket
 
     const [dashboardData, setDashboardData] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch data on initial load and when filters change
+    // Fetch data on initial load and when channel changes
     useEffect(() => {
         async function loadData() {
             try {
                 setIsLoading(true);
                 const params = new URLSearchParams();
-                params.append('region', selectedRegion);
+                params.append('region', 'All Regions'); // Channel manager sees all regions
                 params.append('channel', selectedChannel);
                 const response = await fetch(`/api/dashboard-data?${params.toString()}`);
                 if (!response.ok) {
                     throw new Error(`API failed with status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log("Data fetched from API:", data);
+                console.log("Channel Dashboard Data fetched:", data);
                 setDashboardData(data);
             } catch (error) {
-                console.error("Failed to fetch dashboard data:", error);
+                console.error("Failed to fetch channel dashboard data:", error);
             } finally {
                 setIsLoading(false);
             }
         }
         loadData();
-    }, [selectedRegion, selectedChannel]);
-
+    }, [selectedChannel]);
 
     // Loading State
     if (isLoading || !dashboardData) {
@@ -78,7 +74,7 @@ export default function Dashboard() {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading Trade Analytics Dashboard...</p>
+                    <p className="text-gray-600">Loading Channel Manager Dashboard...</p>
                 </div>
             </div>
         );
@@ -95,7 +91,7 @@ export default function Dashboard() {
             id: 'ytd-sales',
             name: 'YTD Sales (2024)',
             value: `LKR ${formatLargeNumber(dashboardData?.kpis?.ytdSales || 0)}`,
-            target: 50000000, // 50M LKR realistic annual target
+            target: 50000000,
             unit: '',
             trend: 'up' as const,
             trendValue: 5.2,
@@ -105,7 +101,7 @@ export default function Dashboard() {
             id: 'growth-rate',
             name: 'Growth % (vs 2023)',
             value: growthPercentValue.toFixed(1),
-            target: 8.5, // Realistic 8.5% YoY growth target for FMCG
+            target: 8.5,
             unit: '%',
             trend: growthPercentValue >= 8.5 ? 'up' as const : 'down' as const,
             trendValue: growthPercentValue,
@@ -115,7 +111,7 @@ export default function Dashboard() {
             id: 'promo-uplift',
             name: 'Promo Uplift %',
             value: promoUpliftValue.toFixed(1),
-            target: 12, // Industry standard 10-15% uplift target
+            target: 12,
             unit: '%',
             trend: promoUpliftValue >= 12 ? 'up' as const : 'down' as const,
             trendValue: promoUpliftValue,
@@ -125,7 +121,7 @@ export default function Dashboard() {
             id: 'return-rate',
             name: 'Return Rate %',
             value: returnRateValue.toFixed(1),
-            target: 2.5, // Keep return rate below 2.5%
+            target: 2.5,
             unit: '%',
             trend: returnRateValue <= 2.5 ? 'down' as const : 'up' as const,
             trendValue: returnRateValue - 2.5,
@@ -135,7 +131,7 @@ export default function Dashboard() {
             id: 'oos-rate',
             name: 'OOS % (2024)',
             value: oosRateValue.toFixed(1),
-            target: 10.0, // Industry best practice: <10% OOS
+            target: 10.0,
             unit: '%',
             trend: oosRateValue <= 10.0 ? 'down' as const : 'up' as const,
             trendValue: oosRateValue - 10.0,
@@ -143,23 +139,61 @@ export default function Dashboard() {
         }
     ];
 
-    const kpiIcons = [ <TrendingUp className="w-5 h-5 text-blue-600" />, <Target className="w-5 h-5 text-red-600" />, <Gift className="w-5 h-5 text-purple-600" />, <RotateCcw className="w-5 h-5 text-green-600" />, <PieChart className="w-5 h-5 text-orange-600" /> ];
+    const kpiIcons = [
+        <TrendingUp key="icon-1" className="w-5 h-5 text-blue-600" />,
+        <Target key="icon-2" className="w-5 h-5 text-red-600" />,
+        <Gift key="icon-3" className="w-5 h-5 text-purple-600" />,
+        <RotateCcw key="icon-4" className="w-5 h-5 text-green-600" />,
+        <PieChart key="icon-5" className="w-5 h-5 text-orange-600" />
+    ];
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <TableauHeader
-                title="Trade Analytics - Head of MT Dashboard"
-                regionList={dashboardData.regionList || []}
-                channelList={dashboardData.channelList || []}
-                selectedRegion={selectedRegion}
-                selectedChannel={selectedChannel}
-                onRegionChange={setSelectedRegion}
-                onChannelChange={setSelectedChannel}
-            />
+            {/* Channel Manager Header with Channel Selector */}
+            <div className="bg-white border-b border-gray-200 shadow-sm">
+                <div className="p-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+                                <Store className="w-7 h-7 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Channel Manager Dashboard</h1>
+                            </div>
+                        </div>
+
+                        {/* Channel Selector */}
+                        <div className="flex items-center space-x-4">
+                            <label className="text-sm font-semibold text-gray-700">Select Channel:</label>
+                            <select
+                                value={selectedChannel}
+                                onChange={(e) => setSelectedChannel(e.target.value)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="Supermarket">Supermarket</option>
+                                <option value="Retail Shop">Retail Shop</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Main Content Area */}
             <div className="p-8 space-y-8">
+                {/* Channel Info Banner */}
+                <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bold mb-2">{selectedChannel} Performance Overview</h2>
+                            <p className="text-blue-100">Real-time insights for {selectedChannel} channel across all regions</p>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-sm text-blue-100 mb-1">Total Outlets</div>
+                            <div className="text-3xl font-bold">{dashboardData.outletCount || 0}</div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* KPI Row */}
                 <div className="grid grid-cols-5 gap-6">
                     {enhancedKPIs.map((kpi, index) => (
@@ -188,7 +222,7 @@ export default function Dashboard() {
                             <div>
                                 <h3 className="text-sm font-semibold text-gray-700 uppercase">Active Outlets</h3>
                                 <div className="text-4xl font-bold text-gray-900">{dashboardData.outletCount}</div>
-                                <div className="text-sm text-gray-600">Active retail locations</div>
+                                <div className="text-sm text-gray-600">Active {selectedChannel} outlets</div>
                             </div>
                         </div>
                     </div>
@@ -208,21 +242,28 @@ export default function Dashboard() {
 
                 {/* Forecast & Table Row */}
                 <div className="grid grid-cols-12 gap-8">
-                    <div className="col-span-8"> <ForecastChart data={dashboardData.salesForecast} height={350} /> </div>
-                    <div className="col-span-4"> <EnhancedForecastTable data={dashboardData.forecastTable} /> </div>
+                    <div className="col-span-8">
+                        <ForecastChart data={dashboardData.salesForecast} height={350} />
+                    </div>
+                    <div className="col-span-4">
+                        <EnhancedForecastTable data={dashboardData.forecastTable} />
+                    </div>
                 </div>
 
-                {/* Achievement, Returns, Channel Row */}
+                {/* Achievement, Returns Row */}
                 <div className="grid grid-cols-12 gap-8">
-                    <div className="col-span-6"> <ProfessionalAchievementChart data={dashboardData.achievementData} /> </div>
-                    <div className="col-span-3"> <ReturnRateMatrix data={dashboardData.returnMatrixData} /> </div>
-                    <div className="col-span-3"> <EnhancedChannelDonut data={dashboardData.channels} /> </div>
+                    <div className="col-span-9">
+                        <ProfessionalAchievementChart data={dashboardData.achievementData} />
+                    </div>
+                    <div className="col-span-3">
+                        <ReturnRateMatrix data={dashboardData.returnMatrixData} />
+                    </div>
                 </div>
 
                 {/* Regional Sales Heatmap - Sri Lanka Map */}
                 <SriLankaMap data={dashboardData.achievementData || []} />
 
-                {/* --- NEW TABLES SECTION --- */}
+                {/* Tables Section */}
                 <div className="space-y-8">
                     {/* Top/Bottom Outlets */}
                     <TopBottomOutletTable
@@ -239,13 +280,13 @@ export default function Dashboard() {
                     {/* Competitor Insights */}
                     {/*<CompetitorInsights />*/}
                 </div>
-                {/* --- END NEW TABLES SECTION --- */}
 
                 {/* Footer */}
                 <footer className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-8 text-sm text-gray-600">
                             <span>© 2025 Unilever Sri Lanka</span>
+                            <span>Channel: {selectedChannel}</span>
                             <span>Data refreshed: Every 15 minutes</span>
                             <span>Last update: {new Date(dashboardData.lastUpdated).toLocaleString()}</span>
                         </div>
@@ -259,3 +300,4 @@ export default function Dashboard() {
         </div>
     );
 }
+

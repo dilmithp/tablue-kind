@@ -62,13 +62,13 @@ export function EnhancedForecastTable({ data }: EnhancedForecastTableProps) {
                     <tr>
                         <th
                             scope="col"
-                            className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
                         >
                             Week
                         </th>
                         <th
                             scope="col"
-                            className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
                         >
                             Forecast (SARIMAX)
                         </th>
@@ -77,10 +77,10 @@ export function EnhancedForecastTable({ data }: EnhancedForecastTableProps) {
                     <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((row) => (
                         <tr key={row.week} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800 text-center">
                                 {formatWeek(row.week)}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-bold text-blue-700">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-blue-700 text-center">
                                 {formatLKR(row[bestModelKey as keyof ForecastRow] as number)}
                             </td>
                         </tr>

@@ -43,14 +43,17 @@ export function EnhancedChannelDonut({ data }: EnhancedChannelDonutProps) {
     const totalSales = data.reduce((acc, entry) => acc + (Number(entry.sales) || 0), 0);
 
     // Format data for the chart, adding percentages and colors
-    const chartData = data.map((entry, index) => ({
-        name: entry.channel,
-        value: Number(entry.sales) || 0,
-        percentage: ((Number(entry.sales) || 0 / totalSales) * 100).toFixed(1),
-        color: COLORS[index % COLORS.length],
-    }));
+    const chartData = data.map((entry, index) => {
+        const salesValue = Number(entry.sales) || 0;
+        return {
+            name: entry.channel,
+            value: salesValue,
+            percentage: ((salesValue / totalSales) * 100).toFixed(1),
+            color: COLORS[index % COLORS.length],
+        };
+    });
 
-    const CustomTooltip = ({ active, payload }: any) => {
+    const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number; percentage: string } }> }) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
@@ -62,6 +65,11 @@ export function EnhancedChannelDonut({ data }: EnhancedChannelDonutProps) {
             );
         }
         return null;
+    };
+
+    // Custom label to show percentage outside the pie
+    const renderCustomLabel = (entry: { percentage: string }) => {
+        return `${entry.percentage}%`;
     };
 
     return (
@@ -80,6 +88,8 @@ export function EnhancedChannelDonut({ data }: EnhancedChannelDonutProps) {
                             fill="#8884d8"
                             paddingAngle={2}
                             dataKey="value"
+                            label={renderCustomLabel}
+                            labelLine={true}
                         >
                             {chartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -91,9 +101,14 @@ export function EnhancedChannelDonut({ data }: EnhancedChannelDonutProps) {
                             align="right"
                             verticalAlign="middle"
                             iconType="circle"
-                            formatter={(value, entry) => (
-                                <span className="text-gray-700 font-medium">{value}</span>
-                            )}
+                            formatter={(value) => {
+                                const data = chartData.find(d => d.name === value);
+                                return (
+                                    <span className="text-gray-700 font-medium">
+                                        {value} ({data?.percentage}%)
+                                    </span>
+                                );
+                            }}
                         />
                     </PieChart>
                 </ResponsiveContainer>
