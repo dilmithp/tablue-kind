@@ -35,9 +35,9 @@ export function TableauHeader({
                     {/* Left Side: Title */}
                     <div className="flex-shrink-0">
                         <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-                        <p className="text-sm text-gray-500">
-                            Unilever Sri Lanka - Head of Trade Analytics
-                        </p>
+                        {/*<p className="text-sm text-gray-500">*/}
+                        {/*    Unilever Sri Lanka - Head of Trade Analytics*/}
+                        {/*</p>*/}
                     </div>
 
                     {/* Right Side: Filters */}
