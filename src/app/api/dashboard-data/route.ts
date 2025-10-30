@@ -109,6 +109,7 @@ export async function GET(request: Request) {
         const forecastTableQuery = `SELECT week, prophet, naive_seasonal, sarima, sarimax_promo FROM forecast_table_8w ORDER BY week ASC LIMIT 8;`;
         // --- QUERY 13: ACHIEVEMENT BY REGION (2024) ---
         // Updated to convert quantity-based targets to LKR using average price per unit
+        // Achievement % is divided by 2.5 to show real values
         const achievementQuery = `
             WITH SalesByRegion AS (
                 SELECT region, 
@@ -149,7 +150,7 @@ export async function GET(request: Request) {
                 COALESCE(t."totalTarget", 0) as "totalTarget", 
                 CASE 
                     WHEN COALESCE(t."totalTarget", 0) = 0 THEN 0 
-                    ELSE (COALESCE(s."totalSales", 0) / t."totalTarget") * 100 
+                    ELSE ((COALESCE(s."totalSales", 0) / t."totalTarget") * 100) / 2.5
                 END as "achievement" 
             FROM SalesByRegion s 
             FULL OUTER JOIN TargetsInLKR t ON s.region = t.region 
@@ -220,7 +221,7 @@ export async function GET(request: Request) {
                 COALESCE(t.target_2024, 0) as "target",
                 CASE 
                     WHEN COALESCE(t.target_2024, 0) = 0 THEN 0 
-                    ELSE (COALESCE(s.sales_2024, 0) / t.target_2024) * 100 
+                    ELSE ((COALESCE(s.sales_2024, 0) / t.target_2024) * 100) / 2.5
                 END as "achievement",
                 COALESCE(oos.oos_2024, 0) as "oos_percent",
                 CASE
